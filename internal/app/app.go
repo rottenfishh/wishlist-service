@@ -3,8 +3,10 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"time"
 	"wishlist-service/internal/adapter/in/httpservice"
 	"wishlist-service/internal/adapter/out/repository"
@@ -55,8 +57,8 @@ func (a *App) Run(ctx context.Context) error {
 
 	go func() {
 		err := a.server.Run()
-		if err != nil {
-			slog.Error("starting http server error", err)
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("starting http server", "error", err)
 			errCh <- err
 			return
 		}
@@ -71,7 +73,7 @@ func (a *App) Run(ctx context.Context) error {
 	case serverError := <-errCh:
 		err := a.Shutdown()
 		if err != nil {
-			slog.Error("shutting down app error", err)
+			slog.Error("shutting down app", "error", err)
 		}
 		return serverError
 	}

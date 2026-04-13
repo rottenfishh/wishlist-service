@@ -41,8 +41,8 @@ func (h *WishlistHandler) Create(c *gin.Context) {
 	}
 
 	var req dto.CreateWishlistRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		slog.Error("Error binding wishlist request: %v", err)
+	if err = c.ShouldBindJSON(&req); err != nil {
+		slog.Error("Binding wishlist request", "error", err)
 		writeError(c, model.ErrInvalidRequest)
 		return
 	}
@@ -161,7 +161,7 @@ func (h *WishlistHandler) List(c *gin.Context) {
 
 	list, err := h.service.GetByUserID(c.Request.Context(), userID)
 	if err != nil {
-		slog.Error("Error getting wishlist by user: %v", err)
+		slog.Error("getting wishlist by user", "error", err)
 		writeError(c, err)
 		return
 	}
