@@ -3,19 +3,30 @@ package gift
 import (
 	"cdek/internal/model"
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 )
 
 type service struct {
-	repo Repository
+	repo     Repository
+	wishlist WishlistReader
 }
 
-func NewService(repo Repository) Service {
-	return &service{repo}
+func NewService(repo Repository, wishlist WishlistReader) Service {
+	return &service{repo: repo, wishlist: wishlist}
 }
 
-func (s *service) Save(ctx context.Context, wishlistID int64, name, description, link string, priority int) (*model.Gift, error) {
+func (s *service) Save(ctx context.Context, userID uuid.UUID, wishlistID int64, name, description, link string, priority int) (*model.Gift, error) {
+	whList, err := s.wishlist.GetByID(ctx, wishlistID)
+	if err != nil {
+		return nil, err
+	}
+
+	if whList.UserID != userID {
+		return nil, model.ErrForbidden
+	}
+
 	gift := &model.Gift{
 		WishlistID:  wishlistID,
 		Name:        name,
@@ -28,24 +39,60 @@ func (s *service) Save(ctx context.Context, wishlistID int64, name, description,
 	return s.repo.Save(ctx, gift)
 }
 
-func (s *service) Update(ctx context.Context, ID int64, name, description, link string, priority int) (*model.Gift, error) {
-	gift, err := s.repo.GetByID(ctx, ID)
+func (s *service) Update(ctx context.Context, userID uuid.UUID, ID int64, name, description,
+	link *string, priority *int) (*model.Gift, error) {
+
+	gift, err := s.repo.GetByIDAndUserID(ctx, ID, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	gift.Name = name
-	gift.Description = description
-	gift.Link = link
-	gift.Priority = priority
+	if name != nil {
+		gift.Name = *name
+	}
+	if description != nil {
+		gift.Description = *description
+	}
+	if link != nil {
+		gift.Link = *link
+	}
+	if priority != nil {
+		gift.Priority = *priority
+	}
 
 	return s.repo.Update(ctx, gift)
 }
 
 func (s *service) Book(ctx context.Context, ID int64, token uuid.UUID) (*model.Gift, error) {
-	return s.repo.Book(ctx, ID, token)
+	gift, err := s.repo.Book(ctx, ID, token)
+	if err == nil {
+		return gift, nil
+	}
+
+	return nil, s.resolveBookingError(ctx, ID, token, err)
 }
 
-func (s *service) Delete(ctx context.Context, ID int64) (*model.Gift, error) {
-	return s.repo.Delete(ctx, ID)
+func (s *service) Delete(ctx context.Context, userID uuid.UUID, ID int64) (*model.Gift, error) {
+	gift, err := s.repo.GetByIDAndUserID(ctx, ID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.repo.Delete(ctx, gift.ID)
+}
+
+func (s *service) resolveBookingError(ctx context.Context, id int64, token uuid.UUID, err error) error {
+	if !errors.Is(err, model.ErrNotUpdated) {
+		return err
+	}
+
+	if _, err = s.wishlist.GetByToken(ctx, token); err != nil {
+		return err
+	}
+
+	if _, err = s.repo.GetByID(ctx, id); err != nil {
+		return err
+	}
+
+	return model.ErrAlreadyBooked
 }

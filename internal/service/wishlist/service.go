@@ -2,7 +2,6 @@ package wishlist
 
 import (
 	"cdek/internal/model"
-	"cdek/internal/service/gift"
 	"context"
 	"time"
 
@@ -10,12 +9,12 @@ import (
 )
 
 type service struct {
-	repo      Repository
-	giftsRepo gift.Repository
+	repo  Repository
+	gifts GiftReader
 }
 
-func NewService(repo Repository, giftsRepo gift.Repository) Service {
-	return &service{repo: repo, giftsRepo: giftsRepo}
+func NewService(repo Repository, giftsRepo GiftReader) Service {
+	return &service{repo: repo, gifts: giftsRepo}
 }
 
 func (s *service) Create(ctx context.Context, userID uuid.UUID, name, description string,
@@ -66,7 +65,7 @@ func (s *service) GetByID(ctx context.Context, id int64) (*model.WishlistDetails
 		return nil, err
 	}
 
-	items, err := s.giftsRepo.GetByWishlistID(ctx, wishlist.ID)
+	items, err := s.gifts.GetByWishlistID(ctx, wishlist.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +83,7 @@ func (s *service) GetByToken(ctx context.Context, token uuid.UUID) (*model.Wishl
 		return nil, err
 	}
 
-	items, err := s.giftsRepo.GetByWishlistID(ctx, wishlist.ID)
+	items, err := s.gifts.GetByWishlistID(ctx, wishlist.ID)
 	if err != nil {
 		return nil, err
 	}

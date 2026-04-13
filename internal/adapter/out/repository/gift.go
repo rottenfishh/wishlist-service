@@ -62,7 +62,7 @@ func (r *GiftRepository) Book(ctx context.Context, ID int64, token uuid.UUID) (*
                     SELECT id FROM wishlists WHERE token = $2
                 )
                 AND booked = false
-              RETURNING id, wishlist_id, name, description, link, priority  `
+              RETURNING id, wishlist_id, name, description, link, priority, booked`
 
 	row := r.db.QueryRowContext(ctx, query, ID, token)
 
@@ -71,6 +71,9 @@ func (r *GiftRepository) Book(ctx context.Context, ID int64, token uuid.UUID) (*
 		&gift.Description, &gift.Link, &gift.Priority, &gift.Booked)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, model.ErrNotUpdated
+		}
 		return nil, fmt.Errorf("book gift: %w", err)
 	}
 
@@ -121,6 +124,28 @@ func (r *GiftRepository) GetByWishlistID(ctx context.Context, id int64) ([]model
 	}
 
 	return gifts, nil
+}
+
+func (r *GiftRepository) GetByIDAndUserID(ctx context.Context, id int64, userID uuid.UUID) (*model.Gift, error) {
+	query := `SELECT g.id, g.wishlist_id, g.name, g.description, g.link, g.priority, g.booked
+              FROM gifts g
+              JOIN wishlists w ON w.id = g.wishlist_id
+              WHERE g.id = $1 AND w.user_id = $2`
+
+	row := r.db.QueryRowContext(ctx, query, id, userID)
+
+	var gift model.Gift
+	err := row.Scan(&gift.ID, &gift.WishlistID, &gift.Name, &gift.Description,
+		&gift.Link, &gift.Priority, &gift.Booked)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, model.ErrNotFound
+		}
+		return nil, fmt.Errorf("get by id gift: %w", err)
+	}
+
+	return &gift, nil
 }
 
 func (r *GiftRepository) Delete(ctx context.Context, giftID int64) (*model.Gift, error) {

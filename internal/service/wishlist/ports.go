@@ -25,3 +25,7 @@ type Repository interface {
 	GetByUserID(ctx context.Context, userID uuid.UUID) ([]model.Wishlist, error)
 	GetByToken(ctx context.Context, token uuid.UUID) (*model.Wishlist, error)
 }
+
+type GiftReader interface {
+	GetByWishlistID(ctx context.Context, id int64) ([]model.Gift, error)
+}
