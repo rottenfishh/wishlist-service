@@ -20,7 +20,7 @@ func NewWishlistHandler(service wishlist.Service) *WishlistHandler {
 }
 
 func (h *WishlistHandler) Create(c *gin.Context) {
-	userID, err := extractUserId(c)
+	userID, err := extractUserID(c)
 	if err != nil {
 		writeError(c, err)
 		return
@@ -50,7 +50,7 @@ func (h *WishlistHandler) Update(c *gin.Context) {
 		return
 	}
 
-	userID, err := extractUserId(c)
+	userID, err := extractUserID(c)
 	if err != nil {
 		writeError(c, err)
 		return
@@ -81,7 +81,7 @@ func (h *WishlistHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	userID, err := extractUserId(c)
+	userID, err := extractUserID(c)
 	if err != nil {
 		writeError(c, err)
 		return
@@ -98,7 +98,7 @@ func (h *WishlistHandler) Delete(c *gin.Context) {
 }
 
 func (h *WishlistHandler) List(c *gin.Context) {
-	userID, err := extractUserId(c)
+	userID, err := extractUserID(c)
 	if err != nil {
 		writeError(c, err)
 		return
@@ -122,7 +122,7 @@ func (h *WishlistHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	userID, err := extractUserId(c)
+	userID, err := extractUserID(c)
 	if err != nil {
 		writeError(c, err)
 		return
@@ -134,7 +134,7 @@ func (h *WishlistHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	if list.Wishlist.UserID != userID {
+	if list.UserID != userID {
 		writeError(c, model.ErrForbidden)
 		return
 	}
@@ -159,4 +159,12 @@ func (h *WishlistHandler) GetByToken(c *gin.Context) {
 
 	resp := dto.ToWishListDetailsResponse(*list)
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *WishlistHandler) RegisterRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
+	router.POST("", authMiddleware, h.Create)
+	router.GET("", authMiddleware, h.List)
+	router.GET("/:id", authMiddleware, h.GetByID)
+	router.PUT("/:id", authMiddleware, h.Update)
+	router.DELETE("/:id", authMiddleware, h.Delete)
 }

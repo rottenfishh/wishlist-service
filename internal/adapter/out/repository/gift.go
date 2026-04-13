@@ -109,6 +109,7 @@ func (r *GiftRepository) GetByWishlistID(ctx context.Context, id int64) ([]model
 	defer rows.Close()
 
 	var gifts []model.Gift
+
 	for rows.Next() {
 		var gift model.Gift
 		err = rows.Scan(&gift.ID, &gift.WishlistID, &gift.Name,

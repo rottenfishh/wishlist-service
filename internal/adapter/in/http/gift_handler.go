@@ -22,14 +22,14 @@ func NewGiftHandler(service gift.Service) *GiftHandler {
 }
 
 func (h *GiftHandler) Create(c *gin.Context) {
-	wishlistIDParam := c.Param("id")
+	wishlistIDParam := c.Param("wishlistId")
 	wishlistID, err := strconv.ParseInt(wishlistIDParam, 10, 64)
 	if err != nil {
 		writeError(c, model.ErrInvalidRequest)
 		return
 	}
 
-	userID, err := extractUserId(c)
+	userID, err := extractUserID(c)
 	if err != nil {
 		return
 	}
@@ -52,14 +52,20 @@ func (h *GiftHandler) Create(c *gin.Context) {
 }
 
 func (h *GiftHandler) Update(c *gin.Context) {
+	wishlistIDParam := c.Param("wishlistId")
+	wishlistID, err := strconv.Atoi(wishlistIDParam)
+	if err != nil {
+		writeError(c, model.ErrInvalidRequest)
+		return
+	}
+
 	giftIDParam := c.Param("id")
 	giftID, err := strconv.Atoi(giftIDParam)
 	if err != nil {
 		writeError(c, model.ErrInvalidRequest)
 		return
 	}
-
-	userID, err := extractUserId(c)
+	userID, err := extractUserID(c)
 	if err != nil {
 		writeError(c, err)
 		return
@@ -71,8 +77,8 @@ func (h *GiftHandler) Update(c *gin.Context) {
 		return
 	}
 
-	newGift, err := h.service.Update(c.Request.Context(), userID, int64(giftID), req.Name,
-		req.Description, req.Link, req.Priority)
+	newGift, err := h.service.Update(c.Request.Context(), userID, int64(wishlistID),
+		int64(giftID), req.Name, req.Description, req.Link, req.Priority)
 	if err != nil {
 		writeError(c, err)
 		return
@@ -83,6 +89,13 @@ func (h *GiftHandler) Update(c *gin.Context) {
 }
 
 func (h *GiftHandler) Delete(c *gin.Context) {
+	wishlistIDParam := c.Param("wishlistId")
+	wishlistID, err := strconv.Atoi(wishlistIDParam)
+	if err != nil {
+		writeError(c, model.ErrInvalidRequest)
+		return
+	}
+
 	giftIDParam := c.Param("id")
 	giftID, err := strconv.Atoi(giftIDParam)
 	if err != nil {
@@ -90,13 +103,13 @@ func (h *GiftHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	userID, err := extractUserId(c)
+	userID, err := extractUserID(c)
 	if err != nil {
 		writeError(c, err)
 		return
 	}
 
-	deletedGift, err := h.service.Delete(c.Request.Context(), userID, int64(giftID))
+	deletedGift, err := h.service.Delete(c.Request.Context(), userID, int64(wishlistID), int64(giftID))
 	if err != nil {
 		writeError(c, err)
 		return
@@ -129,4 +142,10 @@ func (h *GiftHandler) Book(c *gin.Context) {
 
 	resp := dto.ToGiftResponse(bookedGift)
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *GiftHandler) RegisterRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
+	router.POST("", authMiddleware, h.Create)
+	router.PUT("/:id", authMiddleware, h.Update)
+	router.DELETE("/:id", authMiddleware, h.Delete)
 }

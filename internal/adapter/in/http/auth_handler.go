@@ -77,3 +77,8 @@ func (h *UserHandler) Login(c *gin.Context) {
 	tokenResp := dto.Token{Token: token}
 	c.IndentedJSON(http.StatusOK, tokenResp)
 }
+
+func (h *UserHandler) RegisterRoutes(router *gin.RouterGroup) {
+	router.POST("/register", h.Register)
+	router.POST("/login", h.Login)
+}

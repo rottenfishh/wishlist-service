@@ -39,12 +39,23 @@ func (s *service) Save(ctx context.Context, userID uuid.UUID, wishlistID int64, 
 	return s.repo.Save(ctx, gift)
 }
 
-func (s *service) Update(ctx context.Context, userID uuid.UUID, ID int64, name, description,
+func (s *service) Update(ctx context.Context, userID uuid.UUID, wishlistID, ID int64, name, description,
 	link *string, priority *int) (*model.Gift, error) {
 
-	gift, err := s.repo.GetByIDAndUserID(ctx, ID, userID)
+	wishlist, err := s.wishlist.GetByID(ctx, wishlistID)
 	if err != nil {
 		return nil, err
+	}
+	if wishlist.UserID != userID {
+		return nil, model.ErrForbidden
+	}
+
+	gift, err := s.repo.GetByID(ctx, ID)
+	if err != nil {
+		return nil, err
+	}
+	if gift.WishlistID != wishlistID {
+		return nil, model.ErrNotFound
 	}
 
 	if name != nil {
@@ -72,13 +83,24 @@ func (s *service) Book(ctx context.Context, ID int64, token uuid.UUID) (*model.G
 	return nil, s.resolveBookingError(ctx, ID, token, err)
 }
 
-func (s *service) Delete(ctx context.Context, userID uuid.UUID, ID int64) (*model.Gift, error) {
-	gift, err := s.repo.GetByIDAndUserID(ctx, ID, userID)
+func (s *service) Delete(ctx context.Context, userID uuid.UUID, wishlistID, ID int64) (*model.Gift, error) {
+	wishlist, err := s.wishlist.GetByID(ctx, wishlistID)
 	if err != nil {
 		return nil, err
 	}
+	if wishlist.UserID != userID {
+		return nil, model.ErrForbidden
+	}
 
-	return s.repo.Delete(ctx, gift.ID)
+	gift, err := s.repo.GetByID(ctx, ID)
+	if err != nil {
+		return nil, err
+	}
+	if gift.WishlistID != wishlistID {
+		return nil, model.ErrNotFound
+	}
+
+	return s.repo.Delete(ctx, ID)
 }
 
 func (s *service) resolveBookingError(ctx context.Context, id int64, token uuid.UUID, err error) error {
