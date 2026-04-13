@@ -1,12 +1,18 @@
 package app
 
 import (
+	"cdek/internal/adapter/in/httpservice"
 	"fmt"
 	"log/slog"
 	"os"
 
 	"github.com/joho/godotenv"
 )
+
+type Config struct {
+	DatabaseConfig
+	httpservice.AuthConfig
+}
 
 type DatabaseConfig struct {
 	DatabaseURL string `config:"database_url"`
@@ -22,20 +28,24 @@ func (c *DatabaseConfig) DSN() string {
 	return dsn
 }
 
-func LoadConfig() (*DatabaseConfig, error) {
+func LoadConfig() (*Config, error) {
 	err := LoadEnv()
 	if err != nil {
 		return nil, fmt.Errorf("loading environment: %w", err)
 	}
 
-	cfg := &DatabaseConfig{}
+	cfg := DatabaseConfig{}
 	cfg.DatabaseURL = os.Getenv("DATABASE_URL")
 	cfg.Name = os.Getenv("DATABASE_NAME")
 	cfg.Password = os.Getenv("DATABASE_PASSWORD")
 	cfg.Host = os.Getenv("DATABASE_HOST")
 	cfg.Port = os.Getenv("DATABASE_PORT")
 
-	return cfg, nil
+	authCfg := httpservice.AuthConfig{
+		JWTSecret: os.Getenv("JWT_SECRET"),
+	}
+
+	return &Config{DatabaseConfig: cfg, AuthConfig: authCfg}, nil
 }
 
 func LoadEnv() error {

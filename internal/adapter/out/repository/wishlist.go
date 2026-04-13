@@ -14,6 +14,10 @@ type WishlistRepository struct {
 	db *sql.DB
 }
 
+func NewWishlistRepository(db *sql.DB) *WishlistRepository {
+	return &WishlistRepository{db: db}
+}
+
 func (r *WishlistRepository) Save(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) {
 	query := `INSERT INTO wishlists(user_id, token, title, description, date) 
               VALUES ($1, $2, $3, $4, $5)

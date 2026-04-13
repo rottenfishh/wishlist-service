@@ -1,37 +1,106 @@
 package app
 
 import (
+	"cdek/internal/adapter/in/httpservice"
+	"cdek/internal/adapter/out/repository"
 	"cdek/internal/database"
+	"cdek/internal/service/auth"
+	"cdek/internal/service/gift"
+	"cdek/internal/service/wishlist"
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
+	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib" // register pgx driver
 )
 
 type App struct {
+	server *httpservice.Server
+	db     *sql.DB
 }
 
-func NewApp() *App {
-	return &App{}
+func NewApp(ctx context.Context, cfg *Config) (*App, error) {
+	InitLogging()
+
+	db, err := ConnectDB(ctx, cfg.DatabaseConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	userRepo := repository.NewUserRepository(db)
+	wishlistRepo := repository.NewWishlistRepository(db)
+	giftRepo := repository.NewGiftRepository(db)
+
+	userService := auth.NewUserService(userRepo, cfg.JWTSecret)
+	wishlistService := wishlist.NewService(wishlistRepo, giftRepo)
+	giftService := gift.NewService(giftRepo, wishlistRepo)
+
+	userHandler := httpservice.NewUserHandler(userService)
+	wishlistHandler := httpservice.NewWishlistHandler(wishlistService)
+	giftHandler := httpservice.NewGiftHandler(giftService)
+
+	server := httpservice.NewServer(":8080", cfg.AuthConfig, httpservice.Handlers{
+		User:     userHandler,
+		Gift:     giftHandler,
+		Wishlist: wishlistHandler,
+	})
+
+	return &App{server: server, db: db}, nil
 }
 
 func (a *App) Run(ctx context.Context) error {
-	cfg, err := LoadConfig()
-	if err != nil {
-		return fmt.Errorf("load config: %w", err)
+	errCh := make(chan error, 1)
+
+	go func() {
+		err := a.server.Run()
+		if err != nil {
+			slog.Error("starting http server error", err)
+			err = a.server.Shutdown(ctx)
+			if err != nil {
+				slog.Error("shutting down http server error", err)
+				errCh <- err
+			}
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		err := a.Shutdown()
+		if err != nil {
+			return err
+		}
+	case serverError := <-errCh:
+		err := a.Shutdown()
+		if err != nil {
+			slog.Error("shutting down app error", err)
+		}
+		return serverError
 	}
 
-	_, err = ConnectDB(ctx, cfg)
-	if err != nil {
-		return fmt.Errorf("connect database: %w", err)
-	}
-	//defer db.Close()
 	return nil
 }
 
+func (a *App) Shutdown() error {
+	slog.Info("shutting down app")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var err error
+	if err = a.server.Shutdown(shutdownCtx); err != nil {
+		slog.Error("shutting down http server error", "err", err)
+	}
+
+	if err = a.db.Close(); err != nil {
+		slog.Error("closing db error", "err", err)
+	}
+
+	return err
+}
+
 // TODO: migrations from docker compose
-func ConnectDB(ctx context.Context, dbConfig *DatabaseConfig) (*sql.DB, error) {
+func ConnectDB(ctx context.Context, dbConfig DatabaseConfig) (*sql.DB, error) {
 	dsn := dbConfig.DSN()
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {

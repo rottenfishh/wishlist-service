@@ -1,4 +1,4 @@
-package http
+package httpservice
 
 import (
 	"log/slog"
@@ -8,10 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
-
-type AuthConfig struct {
-	JWTSecret string
-}
 
 type UserClaims struct {
 	Email string
