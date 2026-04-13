@@ -2,8 +2,8 @@ package httpservice
 
 import (
 	"log/slog"
-	"net/http"
 	"strings"
+	"wishlist-service/internal/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -19,7 +19,7 @@ func AuthMiddleware(cfg AuthConfig) gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			slog.Error("No Authorization header")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			writeError(c, model.ErrUnauthorized)
 			c.Abort()
 			return
 		}
@@ -27,7 +27,7 @@ func AuthMiddleware(cfg AuthConfig) gin.HandlerFunc {
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
 			slog.Error("invalid authorization header: ", "header", authHeader)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			writeError(c, model.ErrUnauthorized)
 			c.Abort()
 			return
 		}
@@ -45,7 +45,7 @@ func AuthMiddleware(cfg AuthConfig) gin.HandlerFunc {
 
 		if err != nil || !token.Valid {
 			slog.Error("invalid token", slog.String("token", tokenStr), slog.String("error", err.Error()))
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			writeError(c, model.ErrUnauthorized)
 			c.Abort()
 			return
 		}

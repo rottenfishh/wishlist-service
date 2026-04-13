@@ -64,7 +64,7 @@ func (h *GiftHandler) Create(c *gin.Context) {
 	}
 
 	resp := dto.ToGiftResponse(newGift)
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusCreated, resp)
 }
 
 // Update godoc
