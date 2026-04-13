@@ -88,7 +88,7 @@ func (r *GiftRepository) GetByID(ctx context.Context, id int64) (*model.Gift, er
 		&gift.Description, &gift.Link, &gift.Priority, &gift.Booked)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, model.NotFound
+			return nil, model.ErrNotFound
 		}
 		return nil, fmt.Errorf("get by id gift: %w", err)
 	}

@@ -45,7 +45,7 @@ func (s *service) Login(ctx context.Context, email, password string) (string, er
 		return "", err
 	}
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
-		return "", model.Unauthorized
+		return "", model.ErrUnauthorized
 	}
 
 	token, err := s.generateToken(user)
@@ -59,7 +59,7 @@ func (s *service) Login(ctx context.Context, email, password string) (string, er
 
 func (s *service) generateToken(user *model.User) (string, error) {
 	claims := jwt.MapClaims{
-		"sub":   user.Id.String(),
+		"sub":   user.ID.String(),
 		"email": user.Email,
 		"exp":   time.Now().Add(time.Duration(s.config.JWTExpiresInSec) * time.Second).Unix(),
 	}

@@ -39,7 +39,7 @@ func (s *service) Update(ctx context.Context, userID uuid.UUID, wishlistID int64
 	}
 
 	if wishlist.UserID != userID {
-		return nil, model.Forbidden
+		return nil, model.ErrForbidden
 	}
 
 	wishlist.Title = name
@@ -67,7 +67,7 @@ func (s *service) Delete(ctx context.Context, userID uuid.UUID, wishlistID int64
 	}
 
 	if wishlist.UserID != userID {
-		return nil, model.Forbidden
+		return nil, model.ErrForbidden
 	}
 
 	return s.repo.Delete(ctx, wishlistID)

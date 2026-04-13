@@ -18,10 +18,10 @@ func (r *UserRepository) SaveUser(ctx context.Context, user *model.User) (*model
 	query := `INSERT INTO users(id, email, password_hash) VALUES ($1, $2, $3)
                 RETURNING id, email, created_at`
 
-	row := r.db.QueryRowContext(ctx, query, user.Id, user.Email, user.PasswordHash)
+	row := r.db.QueryRowContext(ctx, query, user.ID, user.Email, user.PasswordHash)
 
 	var savedUser model.User
-	err := row.Scan(&savedUser.Id, &savedUser.Email, &savedUser.CreatedAt)
+	err := row.Scan(&savedUser.ID, &savedUser.Email, &savedUser.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -29,13 +29,13 @@ func (r *UserRepository) SaveUser(ctx context.Context, user *model.User) (*model
 	return &savedUser, nil
 }
 
-func (r *UserRepository) GetUserById(ctx context.Context, id string) (*model.User, error) {
+func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*model.User, error) {
 	query := `SELECT * FROM users WHERE id = $1`
 
 	row := r.db.QueryRowContext(ctx, query, id)
 
 	var user model.User
-	err := row.Scan(&user.Id, &user.Email, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Email, &user.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	row := r.db.QueryRowContext(ctx, query, email)
 
 	var user model.User
-	err := row.Scan(&user.Id, &user.Email, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Email, &user.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

@@ -81,7 +81,7 @@ func (r *WishlistRepository) GetByID(ctx context.Context, ID int64) (*model.Wish
 		&wishlist.Title, &wishlist.Description, &wishlist.Date)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, model.NotFound
+			return nil, model.ErrNotFound
 		}
 		return nil, fmt.Errorf("get by id wishlist: %w", err)
 	}
@@ -129,7 +129,7 @@ func (r *WishlistRepository) GetByToken(ctx context.Context, token uuid.UUID) (*
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, model.NotFound
+			return nil, model.ErrNotFound
 		}
 	}
 
