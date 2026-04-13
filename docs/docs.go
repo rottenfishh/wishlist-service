@@ -128,7 +128,7 @@ const docTemplate = `{
                 "tags": [
                     "wishlists"
                 ],
-                "summary": "Get wishlist by public token",
+                "summary": "Get wishlist with items by public token",
                 "parameters": [
                     {
                         "type": "string",
@@ -328,7 +328,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns wishlist details by ID for the authenticated owner",
+                "description": "Get wishlist with items for the authenticated owner",
                 "produces": [
                     "application/json"
                 ],

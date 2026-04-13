@@ -58,10 +58,7 @@ func (a *App) Run(ctx context.Context) error {
 		if err != nil {
 			slog.Error("starting http server error", err)
 			errCh <- err
-			err = a.server.Shutdown(ctx)
-			if err != nil {
-				slog.Error("shutting down http server error", err)
-			}
+			return
 		}
 	}()
 

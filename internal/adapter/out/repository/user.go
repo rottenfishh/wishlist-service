@@ -45,6 +45,9 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*model.Use
 	var user model.User
 	err := row.Scan(&user.ID, &user.Email, &user.CreatedAt, &user.PasswordHash)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, model.ErrNotFound
+		}
 		return nil, err
 	}
 
@@ -59,6 +62,9 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	var user model.User
 	err := row.Scan(&user.ID, &user.Email, &user.CreatedAt, &user.PasswordHash)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, model.ErrNotFound
+		}
 		return nil, err
 	}
 

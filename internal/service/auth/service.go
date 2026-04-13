@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -44,7 +45,11 @@ func (s *service) Register(ctx context.Context, email, password string) (*model.
 func (s *service) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", fmt.Errorf("get user repo: %v", err)
+		slog.Error("get user by email error", "error", err)
+		if errors.Is(err, model.ErrNotFound) {
+			return "", model.ErrUnauthorized
+		}
+		return "", fmt.Errorf("get user by email repo: %w", err)
 	}
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
 		slog.Error("wrong password")

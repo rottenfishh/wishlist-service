@@ -266,7 +266,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
-      summary: Get wishlist by public token
+      summary: Get wishlist with items by public token
       tags:
       - wishlists
   /api/wishlist:
@@ -371,7 +371,7 @@ paths:
       tags:
       - wishlists
     get:
-      description: Returns wishlist details by ID for the authenticated owner
+      description: Get wishlist with items for the authenticated owner
       parameters:
       - description: Wishlist ID
         in: path
