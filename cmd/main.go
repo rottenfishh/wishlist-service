@@ -4,18 +4,29 @@ import (
 	"cdek/internal/app"
 	"context"
 	"log/slog"
-	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-	wishlistApp := app.NewApp()
+	config, err := app.LoadConfig()
+	if err != nil {
+		slog.Error("Error loading config", "err", err)
+		return
+	}
 
-	err := wishlistApp.Run(ctx)
+	wishlistApp, err := app.NewApp(ctx, config)
+	if err != nil {
+		slog.Error("Error creating wishlist app", "err", err)
+		return
+	}
+
+	err = wishlistApp.Run(ctx)
 	if err != nil {
 		slog.Error("Error running app", "error", err)
-		ctx.Done()
-		os.Exit(1)
+		return
 	}
 }
