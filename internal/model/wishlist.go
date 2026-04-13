@@ -14,3 +14,8 @@ type Wishlist struct {
 	Description string
 	Date        time.Time
 }
+
+type WishlistDetails struct {
+	Wishlist
+	Gifts []Gift `json:"gifts"`
+}

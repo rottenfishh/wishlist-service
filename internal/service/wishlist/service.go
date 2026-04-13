@@ -2,6 +2,7 @@ package wishlist
 
 import (
 	"cdek/internal/model"
+	"cdek/internal/service/gift"
 	"context"
 	"time"
 
@@ -9,11 +10,12 @@ import (
 )
 
 type service struct {
-	repo Repository
+	repo      Repository
+	giftsRepo gift.Repository
 }
 
-func NewService(repo Repository) Service {
-	return &service{repo}
+func NewService(repo Repository, giftsRepo gift.Repository) Service {
+	return &service{repo: repo, giftsRepo: giftsRepo}
 }
 
 func (s *service) Create(ctx context.Context, userID uuid.UUID, name, description string,
@@ -31,7 +33,7 @@ func (s *service) Create(ctx context.Context, userID uuid.UUID, name, descriptio
 }
 
 func (s *service) Update(ctx context.Context, userID uuid.UUID, wishlistID int64, name,
-	description string, date time.Time) (*model.Wishlist, error) {
+	description *string, date *time.Time) (*model.Wishlist, error) {
 
 	wishlist, err := s.repo.GetByID(ctx, wishlistID)
 	if err != nil {
@@ -42,9 +44,15 @@ func (s *service) Update(ctx context.Context, userID uuid.UUID, wishlistID int64
 		return nil, model.ErrForbidden
 	}
 
-	wishlist.Title = name
-	wishlist.Description = description
-	wishlist.Date = date
+	if name != nil {
+		wishlist.Title = *name
+	}
+	if description != nil {
+		wishlist.Description = *description
+	}
+	if date != nil {
+		wishlist.Date = *date
+	}
 	return s.repo.Update(ctx, wishlist)
 }
 
@@ -52,12 +60,40 @@ func (s *service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]model.Wi
 	return s.repo.GetByUserID(ctx, userID)
 }
 
-func (s *service) GetByID(ctx context.Context, id int64) (*model.Wishlist, error) {
-	return s.repo.GetByID(ctx, id)
+func (s *service) GetByID(ctx context.Context, id int64) (*model.WishlistDetails, error) {
+	wishlist, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	items, err := s.giftsRepo.GetByWishlistID(ctx, wishlist.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	wishlistWithItems := &model.WishlistDetails{
+		Wishlist: *wishlist,
+		Gifts:    items,
+	}
+	return wishlistWithItems, nil
 }
 
-func (s *service) GetByToken(ctx context.Context, token uuid.UUID) (*model.Wishlist, error) {
-	return s.repo.GetByToken(ctx, token)
+func (s *service) GetByToken(ctx context.Context, token uuid.UUID) (*model.WishlistDetails, error) {
+	wishlist, err := s.repo.GetByToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	items, err := s.giftsRepo.GetByWishlistID(ctx, wishlist.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	wishlistWithItems := &model.WishlistDetails{
+		Wishlist: *wishlist,
+		Gifts:    items,
+	}
+	return wishlistWithItems, nil
 }
 
 func (s *service) Delete(ctx context.Context, userID uuid.UUID, wishlistID int64) (*model.Wishlist, error) {

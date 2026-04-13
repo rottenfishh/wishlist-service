@@ -1,0 +1,67 @@
+package dto
+
+import (
+	"cdek/internal/model"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type CreateWishlistRequest struct {
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Date        time.Time `json:"date"`
+}
+
+type UpdateWishlistRequest struct {
+	Title       *string    `json:"title"`
+	Description *string    `json:"description"`
+	Date        *time.Time `json:"date"`
+}
+
+type WishlistResponse struct {
+	ID          int64     `json:"id"`
+	Token       uuid.UUID `json:"token"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Date        time.Time `json:"date"`
+}
+
+type ListOfWishlistResponse struct {
+	List []WishlistResponse `json:"list"`
+}
+
+type WishlistDetailsResponse struct {
+	WishlistResponse
+	Items []GiftResponse `json:"items"`
+}
+
+func ToWishlistResponse(wishlist model.Wishlist) WishlistResponse {
+	return WishlistResponse{
+		ID:          wishlist.ID,
+		Token:       wishlist.Token,
+		Title:       wishlist.Title,
+		Description: wishlist.Description,
+		Date:        wishlist.Date,
+	}
+}
+
+func ToListOfWishlistResponse(wishlist []model.Wishlist) ListOfWishlistResponse {
+	var list []WishlistResponse
+	for _, wishlistItem := range wishlist {
+		wishlistResp := ToWishlistResponse(wishlistItem)
+		list = append(list, wishlistResp)
+	}
+
+	return ListOfWishlistResponse{List: list}
+}
+
+func ToWishListDetailsResponse(wishlist model.WishlistDetails) WishlistDetailsResponse {
+	var gifts []GiftResponse
+	for _, gift := range wishlist.Gifts {
+		giftResp := ToGiftResponse(&gift)
+		gifts = append(gifts, *giftResp)
+	}
+
+	return WishlistDetailsResponse{WishlistResponse: ToWishlistResponse(wishlist.Wishlist), Items: gifts}
+}
