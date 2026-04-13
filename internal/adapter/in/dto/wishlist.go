@@ -1,8 +1,8 @@
 package dto
 
 import (
-	"cdek/internal/model"
 	"time"
+	"wishlist-service/internal/model"
 
 	"github.com/google/uuid"
 )
@@ -47,7 +47,7 @@ func ToWishlistResponse(wishlist model.Wishlist) WishlistResponse {
 }
 
 func ToListOfWishlistResponse(wishlist []model.Wishlist) ListOfWishlistResponse {
-	var list []WishlistResponse
+	list := make([]WishlistResponse, 0)
 	for _, wishlistItem := range wishlist {
 		wishlistResp := ToWishlistResponse(wishlistItem)
 		list = append(list, wishlistResp)
@@ -57,7 +57,7 @@ func ToListOfWishlistResponse(wishlist []model.Wishlist) ListOfWishlistResponse 
 }
 
 func ToWishListDetailsResponse(wishlist model.WishlistDetails) WishlistDetailsResponse {
-	var gifts []GiftResponse
+	gifts := make([]GiftResponse, 0)
 	for _, gift := range wishlist.Gifts {
 		giftResp := ToGiftResponse(&gift)
 		gifts = append(gifts, *giftResp)

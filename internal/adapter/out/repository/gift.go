@@ -1,10 +1,10 @@
 package repository
 
 import (
-	"cdek/internal/model"
 	"context"
 	"errors"
 	"fmt"
+	"wishlist-service/internal/model"
 
 	"database/sql"
 

@@ -1,8 +1,8 @@
 package httpservice
 
 import (
-	"cdek/internal/model"
 	"log/slog"
+	"wishlist-service/internal/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

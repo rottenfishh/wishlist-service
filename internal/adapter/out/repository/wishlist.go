@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"cdek/internal/model"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	"wishlist-service/internal/model"
 
 	"github.com/google/uuid"
 )
@@ -39,7 +39,8 @@ func (r *WishlistRepository) Save(ctx context.Context, wishlist *model.Wishlist)
 
 func (r *WishlistRepository) Update(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) {
 	query := `UPDATE wishlists SET title = $1, description = $2, date = $3
-              WHERE id = $4;`
+              WHERE id = $4
+              RETURNING id, user_id, token, title, description, date;`
 
 	row := r.db.QueryRowContext(ctx, query, wishlist.Title, wishlist.Description, wishlist.Date, wishlist.ID)
 
@@ -112,6 +113,7 @@ func (r *WishlistRepository) GetByUserID(ctx context.Context, userID uuid.UUID) 
 		if err != nil {
 			return nil, fmt.Errorf("get by user id wishlist: %w", err)
 		}
+		wishlists = append(wishlists, wishlist)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -135,6 +137,7 @@ func (r *WishlistRepository) GetByToken(ctx context.Context, token uuid.UUID) (*
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, model.ErrNotFound
 		}
+		return nil, err
 	}
 
 	return &wishlist, nil

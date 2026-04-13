@@ -3,6 +3,7 @@ package httpservice
 import (
 	"context"
 	"net/http"
+	_ "wishlist-service/docs"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -57,8 +58,7 @@ func (s *Server) RegisterRoutes(router *gin.Engine, h Handlers) {
 	//groups
 	auth := api.Group("/auth")
 	wishlist := api.Group("/wishlist")
-	gift := wishlist.Group("/:wishlistId/gifts")
-
+	gift := api.Group("/wishlists")
 	public := api.Group("/public")
 
 	h.User.RegisterRoutes(auth)
@@ -66,6 +66,6 @@ func (s *Server) RegisterRoutes(router *gin.Engine, h Handlers) {
 	h.Gift.RegisterRoutes(gift, authMiddleWare)
 
 	//public endpoints
-	public.POST("/wishlist/:token/gifts/:id", h.Gift.Book)
-	public.GET("/wishlist/token/:token", h.Wishlist.GetByToken)
+	public.POST("/wishlists/:token/gifts/:id", h.Gift.Book)
+	public.GET("/wishlists/token/:token", h.Wishlist.GetByToken)
 }

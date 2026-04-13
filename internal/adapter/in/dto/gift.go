@@ -1,6 +1,6 @@
 package dto
 
-import "cdek/internal/model"
+import "wishlist-service/internal/model"
 
 type CreateGiftRequest struct {
 	Name        string `json:"name"`

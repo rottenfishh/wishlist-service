@@ -1,9 +1,13 @@
 package repository
 
 import (
-	"cdek/internal/model"
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
+	"wishlist-service/internal/model"
+
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type UserRepository struct {
@@ -23,19 +27,23 @@ func (r *UserRepository) SaveUser(ctx context.Context, user *model.User) (*model
 	var savedUser model.User
 	err := row.Scan(&savedUser.ID, &savedUser.Email, &savedUser.CreatedAt)
 	if err != nil {
-		return nil, err
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, model.ErrUserAlreadyExists
+		}
+		return nil, fmt.Errorf("save user: %w", err)
 	}
 
 	return &savedUser, nil
 }
 
 func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*model.User, error) {
-	query := `SELECT * FROM users WHERE id = $1`
+	query := `SELECT id, email, created_at, password_hash FROM users WHERE id = $1`
 
 	row := r.db.QueryRowContext(ctx, query, id)
 
 	var user model.User
-	err := row.Scan(&user.ID, &user.Email, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Email, &user.CreatedAt, &user.PasswordHash)
 	if err != nil {
 		return nil, err
 	}
@@ -44,12 +52,12 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*model.Use
 }
 
 func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
-	query := `SELECT * FROM users WHERE email = $1`
+	query := `SELECT id, email, created_at, password_hash FROM users WHERE email = $1`
 
 	row := r.db.QueryRowContext(ctx, query, email)
 
 	var user model.User
-	err := row.Scan(&user.ID, &user.Email, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Email, &user.CreatedAt, &user.PasswordHash)
 	if err != nil {
 		return nil, err
 	}

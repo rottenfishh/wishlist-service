@@ -1,11 +1,11 @@
 package httpservice
 
 import (
-	"cdek/internal/adapter/in/dto"
-	"cdek/internal/model"
-	"cdek/internal/service/gift"
 	"net/http"
 	"strconv"
+	"wishlist-service/internal/adapter/in/dto"
+	"wishlist-service/internal/model"
+	"wishlist-service/internal/service/gift"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -21,6 +21,22 @@ func NewGiftHandler(service gift.Service) *GiftHandler {
 	}
 }
 
+// Create godoc
+// @Summary Create gift
+// @Description Creates a new gift in the specified wishlist owned by the authenticated user
+// @Tags gifts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param wishlistId path int true "Wishlist ID"
+// @Param request body dto.CreateGiftRequest true "Gift data"
+// @Success 200 {object} dto.GiftResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Failure 403 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /api/wishlists/{wishlistId}/gifts [post]
 func (h *GiftHandler) Create(c *gin.Context) {
 	wishlistIDParam := c.Param("wishlistId")
 	wishlistID, err := strconv.ParseInt(wishlistIDParam, 10, 64)
@@ -51,6 +67,23 @@ func (h *GiftHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// Update godoc
+// @Summary Update gift
+// @Description Updates a gift in the specified wishlist owned by the authenticated user
+// @Tags gifts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param wishlistId path int true "Wishlist ID"
+// @Param id path int true "Gift ID"
+// @Param request body dto.UpdateGiftRequest true "Updated gift data"
+// @Success 200 {object} dto.GiftResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Failure 403 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /api/wishlists/{wishlistId}/gifts/{id} [put]
 func (h *GiftHandler) Update(c *gin.Context) {
 	wishlistIDParam := c.Param("wishlistId")
 	wishlistID, err := strconv.Atoi(wishlistIDParam)
@@ -88,6 +121,21 @@ func (h *GiftHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// Delete godoc
+// @Summary Delete gift
+// @Description Deletes a gift from the specified wishlist owned by the authenticated user
+// @Tags gifts
+// @Produce json
+// @Security BearerAuth
+// @Param wishlistId path int true "Wishlist ID"
+// @Param id path int true "Gift ID"
+// @Success 200 {object} dto.GiftResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Failure 403 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /api/wishlists/{wishlistId}/gifts/{id} [delete]
 func (h *GiftHandler) Delete(c *gin.Context) {
 	wishlistIDParam := c.Param("wishlistId")
 	wishlistID, err := strconv.Atoi(wishlistIDParam)
@@ -119,6 +167,19 @@ func (h *GiftHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// Book godoc
+// @Summary Book gift
+// @Description Books a gift by public wishlist token
+// @Tags gifts
+// @Produce json
+// @Param token path string true "Wishlist public token (UUID)"
+// @Param id path int true "Gift ID"
+// @Success 200 {object} dto.GiftResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Failure 409 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /api/public/wishlists/{token}/gifts/{id} [post]
 func (h *GiftHandler) Book(c *gin.Context) {
 	tokenParam := c.Param("token")
 	token, err := uuid.Parse(tokenParam)
@@ -145,7 +206,7 @@ func (h *GiftHandler) Book(c *gin.Context) {
 }
 
 func (h *GiftHandler) RegisterRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
-	router.POST("", authMiddleware, h.Create)
-	router.PUT("/:id", authMiddleware, h.Update)
-	router.DELETE("/:id", authMiddleware, h.Delete)
+	router.POST("/:wishlistId/gifts", authMiddleware, h.Create)
+	router.PUT("/:wishlistId/gifts/:id", authMiddleware, h.Update)
+	router.DELETE("/:wishlistId/gifts/:id", authMiddleware, h.Delete)
 }

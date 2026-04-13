@@ -1,10 +1,10 @@
 package httpservice
 
 import (
-	"cdek/internal/adapter/in/dto"
-	"cdek/internal/model"
 	"errors"
 	"net/http"
+	"wishlist-service/internal/adapter/in/dto"
+	"wishlist-service/internal/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,6 +35,16 @@ func mapErrorCode(err error) (int, dto.ErrorResponse) {
 		return http.StatusInternalServerError, dto.ErrorResponse{
 			Error:   "internal_error",
 			Message: "internal server error",
+		}
+	case errors.Is(err, model.ErrAlreadyBooked):
+		return http.StatusConflict, dto.ErrorResponse{
+			Error:   "already_booked",
+			Message: "gift already booked",
+		}
+	case errors.Is(err, model.ErrUserAlreadyExists):
+		return http.StatusConflict, dto.ErrorResponse{
+			Error:   "already_exists",
+			Message: "user already exists",
 		}
 	default:
 		return http.StatusInternalServerError, dto.ErrorResponse{

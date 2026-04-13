@@ -1,10 +1,10 @@
 package app
 
 import (
-	"cdek/internal/adapter/in/httpservice"
 	"fmt"
 	"log/slog"
 	"os"
+	"wishlist-service/internal/adapter/in/httpservice"
 
 	"github.com/joho/godotenv"
 )

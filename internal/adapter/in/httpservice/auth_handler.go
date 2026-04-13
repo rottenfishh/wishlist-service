@@ -1,10 +1,11 @@
 package httpservice
 
 import (
-	"cdek/internal/adapter/in/dto"
-	"cdek/internal/service/auth"
 	"log/slog"
 	"net/http"
+	"wishlist-service/internal/adapter/in/dto"
+	"wishlist-service/internal/model"
+	"wishlist-service/internal/service/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,22 +29,23 @@ func NewUserHandler(service auth.Service) *UserHandler {
 // @Failure 400 {object} dto.ErrorResponse "Invalid request body"
 // @Failure 409 {object} dto.ErrorResponse "User with this email already exists"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /auth/register [post]
+// @Router /api/auth/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 
 	if err := c.BindJSON(&req); err != nil {
 		slog.Error("failed to bind register request", "error", err)
-		c.JSON(http.StatusBadRequest, "invalid request")
+		writeError(c, model.ErrInvalidRequest)
 		return
 	}
 
 	savedUser, err := h.service.Register(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		slog.Error("failed to register user", "error", err)
-		c.JSON(http.StatusInternalServerError, "internal server error")
+		writeError(c, err)
 		return
 	}
+
 	c.IndentedJSON(http.StatusCreated, savedUser)
 }
 
@@ -58,19 +60,19 @@ func (h *UserHandler) Register(c *gin.Context) {
 // @Failure 400 {object} dto.ErrorResponse "Invalid request body"
 // @Failure 401 {object} dto.ErrorResponse "Invalid email or password"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /auth/login [post]
+// @Router /api/auth/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 	if err := c.BindJSON(&req); err != nil {
-		slog.Error("failed to bind loginrequest", "error", err)
-		c.JSON(http.StatusBadRequest, "invalid request")
+		slog.Error("failed to bind login request", "error", err)
+		writeError(c, model.ErrInvalidRequest)
 		return
 	}
 
 	token, err := h.service.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		slog.Error("failed to log in user", "error", err)
-		c.JSON(http.StatusForbidden, "forbidden")
+		writeError(c, err)
 		return
 	}
 

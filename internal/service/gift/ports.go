@@ -1,8 +1,8 @@
 package gift
 
 import (
-	"cdek/internal/model"
 	"context"
+	"wishlist-service/internal/model"
 
 	"github.com/google/uuid"
 )

@@ -1,17 +1,17 @@
 package app
 
 import (
-	"cdek/internal/adapter/in/httpservice"
-	"cdek/internal/adapter/out/repository"
-	"cdek/internal/database"
-	"cdek/internal/service/auth"
-	"cdek/internal/service/gift"
-	"cdek/internal/service/wishlist"
 	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
 	"time"
+	"wishlist-service/internal/adapter/in/httpservice"
+	"wishlist-service/internal/adapter/out/repository"
+	"wishlist-service/internal/database"
+	"wishlist-service/internal/service/auth"
+	"wishlist-service/internal/service/gift"
+	"wishlist-service/internal/service/wishlist"
 
 	_ "github.com/jackc/pgx/v5/stdlib" // register pgx driver
 )
@@ -57,10 +57,10 @@ func (a *App) Run(ctx context.Context) error {
 		err := a.server.Run()
 		if err != nil {
 			slog.Error("starting http server error", err)
+			errCh <- err
 			err = a.server.Shutdown(ctx)
 			if err != nil {
 				slog.Error("shutting down http server error", err)
-				errCh <- err
 			}
 		}
 	}()
@@ -115,6 +115,6 @@ func ConnectDB(ctx context.Context, dbConfig DatabaseConfig) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	slog.Info("migrations applied successfully")
 	return db, nil
 }

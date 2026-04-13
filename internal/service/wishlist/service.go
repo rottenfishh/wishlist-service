@@ -1,9 +1,9 @@
 package wishlist
 
 import (
-	"cdek/internal/model"
 	"context"
 	"time"
+	"wishlist-service/internal/model"
 
 	"github.com/google/uuid"
 )

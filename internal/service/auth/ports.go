@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"cdek/internal/model"
 	"context"
+	"wishlist-service/internal/model"
 )
 
 type Repository interface {

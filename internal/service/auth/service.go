@@ -1,9 +1,11 @@
 package auth
 
 import (
-	"cdek/internal/model"
 	"context"
+	"fmt"
+	"log/slog"
 	"time"
+	"wishlist-service/internal/model"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
@@ -42,14 +44,16 @@ func (s *service) Register(ctx context.Context, email, password string) (*model.
 func (s *service) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("get user repo: %v", err)
 	}
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
+		slog.Error("wrong password")
 		return "", model.ErrUnauthorized
 	}
 
 	token, err := s.generateToken(user)
 	if err != nil {
+		slog.Error("generate token", "error", err)
 		return "", err
 	}
 
