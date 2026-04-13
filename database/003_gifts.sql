@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE IF NOT EXISTS gifts(
     id BIGSERIAL PRIMARY KEY,
-    wishlist_id int8 NOT NULL REFERENCES wishlists(id),
+    wishlist_id int8 NOT NULL REFERENCES wishlists(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     link TEXT,
