@@ -1,4 +1,4 @@
-package in
+package http
 
 import (
 	"cdek/internal/adapter/in/dto"
