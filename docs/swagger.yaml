@@ -7,9 +7,16 @@ definitions:
       link:
         type: string
       name:
+        maxLength: 255
+        minLength: 1
         type: string
       priority:
+        maximum: 5
+        minimum: 1
         type: integer
+    required:
+    - name
+    - priority
     type: object
   dto.CreateWishlistRequest:
     properties:
@@ -18,7 +25,12 @@ definitions:
       description:
         type: string
       title:
+        maxLength: 255
+        minLength: 1
         type: string
+    required:
+    - date
+    - title
     type: object
   dto.ErrorResponse:
     properties:
@@ -48,13 +60,20 @@ definitions:
         type: string
       password:
         type: string
+    required:
+    - email
+    - password
     type: object
   dto.RegisterRequest:
     properties:
       email:
         type: string
       password:
+        minLength: 6
         type: string
+    required:
+    - email
+    - password
     type: object
   dto.Token:
     properties:
@@ -68,8 +87,12 @@ definitions:
       link:
         type: string
       name:
+        maxLength: 255
+        minLength: 1
         type: string
       priority:
+        maximum: 5
+        minimum: 1
         type: integer
     type: object
   dto.UpdateWishlistRequest:
@@ -79,6 +102,8 @@ definitions:
       description:
         type: string
       title:
+        maxLength: 255
+        minLength: 1
         type: string
     type: object
   dto.WishlistDetailsResponse:
@@ -269,7 +294,7 @@ paths:
       summary: Get wishlist with items by public token
       tags:
       - wishlists
-  /api/wishlist:
+  /api/wishlists:
     get:
       description: Returns all wishlists of the authenticated user
       produces:
@@ -327,135 +352,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Create wishlist
-      tags:
-      - wishlists
-  /api/wishlist/{id}:
-    delete:
-      description: Deletes a wishlist owned by the authenticated user
-      parameters:
-      - description: Wishlist ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.WishlistResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Delete wishlist
-      tags:
-      - wishlists
-    get:
-      description: Get wishlist with items for the authenticated owner
-      parameters:
-      - description: Wishlist ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.WishlistDetailsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get wishlist by ID
-      tags:
-      - wishlists
-    put:
-      consumes:
-      - application/json
-      description: Updates a wishlist owned by the authenticated user
-      parameters:
-      - description: Wishlist ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Updated wishlist data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateWishlistRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.WishlistResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update wishlist
       tags:
       - wishlists
   /api/wishlists/{wishlistId}/gifts:
@@ -609,6 +505,135 @@ paths:
       summary: Update gift
       tags:
       - gifts
+  /api/wishlists/details/{id}:
+    delete:
+      description: Deletes a wishlist owned by the authenticated user
+      parameters:
+      - description: Wishlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.WishlistResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete wishlist
+      tags:
+      - wishlists
+    get:
+      description: Get wishlist with items for the authenticated owner
+      parameters:
+      - description: Wishlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.WishlistDetailsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get wishlist by ID
+      tags:
+      - wishlists
+    put:
+      consumes:
+      - application/json
+      description: Updates a wishlist owned by the authenticated user
+      parameters:
+      - description: Wishlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated wishlist data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateWishlistRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.WishlistResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update wishlist
+      tags:
+      - wishlists
 schemes:
 - http
 - https

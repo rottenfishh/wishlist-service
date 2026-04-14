@@ -226,7 +226,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wishlist": {
+        "/api/wishlists": {
             "get": {
                 "security": [
                     {
@@ -321,7 +321,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wishlist/{id}": {
+        "/api/wishlists/details/{id}": {
             "get": {
                 "security": [
                     {
@@ -753,6 +753,10 @@ const docTemplate = `{
     "definitions": {
         "dto.CreateGiftRequest": {
             "type": "object",
+            "required": [
+                "name",
+                "priority"
+            ],
             "properties": {
                 "description": {
                     "type": "string"
@@ -761,15 +765,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 },
                 "priority": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
                 }
             }
         },
         "dto.CreateWishlistRequest": {
             "type": "object",
+            "required": [
+                "date",
+                "title"
+            ],
             "properties": {
                 "date": {
                     "type": "string"
@@ -778,7 +790,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 }
             }
         },
@@ -818,6 +832,10 @@ const docTemplate = `{
         },
         "dto.LoginRequest": {
             "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
             "properties": {
                 "email": {
                     "type": "string"
@@ -829,12 +847,17 @@ const docTemplate = `{
         },
         "dto.RegisterRequest": {
             "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
             "properties": {
                 "email": {
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6
                 }
             }
         },
@@ -856,10 +879,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 },
                 "priority": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
                 }
             }
         },
@@ -873,7 +900,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 }
             }
         },

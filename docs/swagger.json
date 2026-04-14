@@ -224,7 +224,7 @@
                 }
             }
         },
-        "/api/wishlist": {
+        "/api/wishlists": {
             "get": {
                 "security": [
                     {
@@ -319,7 +319,7 @@
                 }
             }
         },
-        "/api/wishlist/{id}": {
+        "/api/wishlists/details/{id}": {
             "get": {
                 "security": [
                     {
@@ -751,6 +751,10 @@
     "definitions": {
         "dto.CreateGiftRequest": {
             "type": "object",
+            "required": [
+                "name",
+                "priority"
+            ],
             "properties": {
                 "description": {
                     "type": "string"
@@ -759,15 +763,23 @@
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 },
                 "priority": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
                 }
             }
         },
         "dto.CreateWishlistRequest": {
             "type": "object",
+            "required": [
+                "date",
+                "title"
+            ],
             "properties": {
                 "date": {
                     "type": "string"
@@ -776,7 +788,9 @@
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 }
             }
         },
@@ -816,6 +830,10 @@
         },
         "dto.LoginRequest": {
             "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
             "properties": {
                 "email": {
                     "type": "string"
@@ -827,12 +845,17 @@
         },
         "dto.RegisterRequest": {
             "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
             "properties": {
                 "email": {
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6
                 }
             }
         },
@@ -854,10 +877,14 @@
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 },
                 "priority": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
                 }
             }
         },
@@ -871,7 +898,9 @@
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 }
             }
         },
