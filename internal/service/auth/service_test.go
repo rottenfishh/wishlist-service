@@ -109,7 +109,7 @@ func TestLoginSuccess(t *testing.T) {
 		t.Fatalf("Login() error = %v", err)
 	}
 
-	parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (any, error) {
 		return []byte("secret"), nil
 	})
 	if err != nil {

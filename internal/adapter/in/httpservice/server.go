@@ -3,7 +3,7 @@ package httpservice
 import (
 	"context"
 	"net/http"
-	_ "wishlist-service/docs"
+	_ "wishlist-service/docs" // swagger docs
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
