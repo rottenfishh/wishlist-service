@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strconv"
 	"wishlist-service/internal/adapter/in/httpservice"
 
 	"github.com/joho/godotenv"
@@ -12,42 +13,58 @@ import (
 type Config struct {
 	DatabaseConfig
 	httpservice.AuthConfig
+	ServerPort string
 }
 
 type DatabaseConfig struct {
-	DatabaseURL string `config:"database_url"`
-	Name        string `config:"name"`
-	Password    string `config:"password"`
-	Host        string `config:"host"`
-	Port        string `config:"port"`
+	MigrationsDir string
+	DatabaseName  string
+	Username      string
+	Password      string
+	Host          string
+	Port          string
 }
 
 func (c *DatabaseConfig) DSN() string {
 	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",
-		c.Name, c.Password, c.Host, c.Port, c.DatabaseURL)
+		c.Username, c.Password, c.Host, c.Port, c.DatabaseName)
 	return dsn
 }
 
 func LoadConfig() (*Config, error) {
-	err := LoadEnv()
-	if err != nil {
-		return nil, fmt.Errorf("loading environment: %w", err)
-	}
-
 	cfg := DatabaseConfig{}
-	cfg.DatabaseURL = os.Getenv("DATABASE_URL")
-	cfg.Name = os.Getenv("DATABASE_NAME")
+	cfg.DatabaseName = os.Getenv("DATABASE_NAME")
+	cfg.Username = os.Getenv("DATABASE_USERNAME")
 	cfg.Password = os.Getenv("DATABASE_PASSWORD")
 	cfg.Host = os.Getenv("DATABASE_HOST")
 	cfg.Port = os.Getenv("DATABASE_PORT")
 
-	authCfg := httpservice.AuthConfig{
-		JWTSecret: os.Getenv("JWT_SECRET"),
+	migrationsDir := os.Getenv("MIGRATIONS_DIR")
+	if migrationsDir == "" {
+		migrationsDir = "database"
+	}
+	cfg.MigrationsDir = migrationsDir
+
+	JwtExpires, err := strconv.Atoi(os.Getenv("JWT_EXPIRES_IN_SEC"))
+	if err != nil {
+		slog.Error("incorrect JWT_EXPIRATION value", "error", err)
+		JwtExpires = 10000
 	}
 
-	return &Config{DatabaseConfig: cfg, AuthConfig: authCfg}, nil
+	authCfg := httpservice.AuthConfig{
+		JWTSecret:  os.Getenv("JWT_SECRET"),
+		JwtExpires: int64(JwtExpires),
+	}
+
+	serverPort := os.Getenv("SERVER_PORT")
+	if serverPort == "" {
+		serverPort = "8080"
+	}
+	return &Config{DatabaseConfig: cfg, AuthConfig: authCfg,
+		ServerPort: serverPort}, nil
 }
 
+// LoadEnv if run locally
 func LoadEnv() error {
 	err := godotenv.Load(".env")
 	if err != nil {

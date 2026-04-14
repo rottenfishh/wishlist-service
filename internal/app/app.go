@@ -35,7 +35,7 @@ func NewApp(ctx context.Context, cfg *Config) (*App, error) {
 	wishlistRepo := repository.NewWishlistRepository(db)
 	giftRepo := repository.NewGiftRepository(db)
 
-	userService := auth.NewUserService(userRepo, cfg.JWTSecret)
+	userService := auth.NewUserService(userRepo, cfg.JWTSecret, cfg.JwtExpires)
 	wishlistService := wishlist.NewService(wishlistRepo, giftRepo)
 	giftService := gift.NewService(giftRepo, wishlistRepo)
 
@@ -43,7 +43,7 @@ func NewApp(ctx context.Context, cfg *Config) (*App, error) {
 	wishlistHandler := httpservice.NewWishlistHandler(wishlistService)
 	giftHandler := httpservice.NewGiftHandler(giftService)
 
-	server := httpservice.NewServer(":8080", cfg.AuthConfig, httpservice.Handlers{
+	server := httpservice.NewServer(":"+cfg.ServerPort, cfg.AuthConfig, httpservice.Handlers{
 		User:     userHandler,
 		Gift:     giftHandler,
 		Wishlist: wishlistHandler,
@@ -110,10 +110,15 @@ func ConnectDB(ctx context.Context, dbConfig DatabaseConfig) (*sql.DB, error) {
 		return nil, fmt.Errorf("ping database: %w", err)
 	}
 
-	err = database.MigrateDB(db, "database")
+	err = database.MigrateDB(db, dbConfig.MigrationsDir)
 	if err != nil {
 		return nil, err
 	}
 	slog.Info("migrations applied successfully")
 	return db, nil
+}
+
+// Handler for refined use
+func (a *App) Handler() http.Handler {
+	return a.server.Handler()
 }
