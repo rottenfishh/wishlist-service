@@ -44,7 +44,6 @@ func AuthMiddleware(cfg AuthConfig) gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			slog.Error("invalid token", "token", tokenStr, "error", err)
 			writeError(c, model.ErrUnauthorized)
 			c.Abort()
 			return
