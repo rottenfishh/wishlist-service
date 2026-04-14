@@ -18,8 +18,8 @@ type service struct {
 	config Config
 }
 
-func NewUserService(repo Repository, JWTSecret string) Service {
-	return &service{repo: repo, config: Config{JWTSecret: JWTSecret, JWTExpiresInSec: 10000}}
+func NewUserService(repo Repository, JWTSecret string, JWTExpiresInSec int64) Service {
+	return &service{repo: repo, config: Config{JWTSecret: JWTSecret, JWTExpiresInSec: JWTExpiresInSec}}
 }
 
 type Config struct {

@@ -16,7 +16,8 @@ type Server struct {
 }
 
 type AuthConfig struct {
-	JWTSecret string
+	JWTSecret  string
+	JwtExpires int64
 }
 
 type Handlers struct {
@@ -57,7 +58,7 @@ func (s *Server) RegisterRoutes(router *gin.Engine, h Handlers) {
 
 	//groups
 	auth := api.Group("/auth")
-	wishlist := api.Group("/wishlist")
+	wishlist := api.Group("/wishlists")
 	gift := api.Group("/wishlists")
 	public := api.Group("/public")
 
@@ -68,4 +69,9 @@ func (s *Server) RegisterRoutes(router *gin.Engine, h Handlers) {
 	//public endpoints
 	public.POST("/wishlists/:token/gifts/:id", h.Gift.Book)
 	public.GET("/wishlists/token/:token", h.Wishlist.GetByToken)
+}
+
+// Handler for refined use
+func (s *Server) Handler() http.Handler {
+	return s.httpServer.Handler
 }

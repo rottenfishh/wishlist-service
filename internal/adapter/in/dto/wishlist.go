@@ -8,13 +8,13 @@ import (
 )
 
 type CreateWishlistRequest struct {
-	Title       string    `json:"title"`
+	Title       string    `json:"title" binding:"required,min=1,max=255"`
 	Description string    `json:"description"`
-	Date        time.Time `json:"date"`
+	Date        time.Time `json:"date" binding:"required"`
 }
 
 type UpdateWishlistRequest struct {
-	Title       *string    `json:"title"`
+	Title       *string    `json:"title" binding:"omitempty,min=1,max=255"`
 	Description *string    `json:"description"`
 	Date        *time.Time `json:"date"`
 }

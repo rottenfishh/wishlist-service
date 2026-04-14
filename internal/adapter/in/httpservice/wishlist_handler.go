@@ -32,7 +32,7 @@ func NewWishlistHandler(service wishlist.Service) *WishlistHandler {
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 401 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/wishlist [post]
+// @Router /api/wishlists [post]
 func (h *WishlistHandler) Create(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -72,7 +72,7 @@ func (h *WishlistHandler) Create(c *gin.Context) {
 // @Failure 403 {object} dto.ErrorResponse
 // @Failure 404 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/wishlist/{id} [put]
+// @Router /api/wishlists/details/{id} [put]
 func (h *WishlistHandler) Update(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -117,7 +117,7 @@ func (h *WishlistHandler) Update(c *gin.Context) {
 // @Failure 403 {object} dto.ErrorResponse
 // @Failure 404 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/wishlist/{id} [delete]
+// @Router /api/wishlists/details/{id} [delete]
 func (h *WishlistHandler) Delete(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -151,7 +151,7 @@ func (h *WishlistHandler) Delete(c *gin.Context) {
 // @Success 200 {array} dto.WishlistResponse
 // @Failure 401 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/wishlist [get]
+// @Router /api/wishlists [get]
 func (h *WishlistHandler) List(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -183,7 +183,7 @@ func (h *WishlistHandler) List(c *gin.Context) {
 // @Failure 403 {object} dto.ErrorResponse
 // @Failure 404 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/wishlist/{id} [get]
+// @Router /api/wishlists/details/{id} [get]
 func (h *WishlistHandler) GetByID(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -245,7 +245,7 @@ func (h *WishlistHandler) GetByToken(c *gin.Context) {
 func (h *WishlistHandler) RegisterRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
 	router.POST("", authMiddleware, h.Create)
 	router.GET("", authMiddleware, h.List)
-	router.GET("/:id", authMiddleware, h.GetByID)
-	router.PUT("/:id", authMiddleware, h.Update)
-	router.DELETE("/:id", authMiddleware, h.Delete)
+	router.GET("/details/:id", authMiddleware, h.GetByID)
+	router.PUT("/details/:id", authMiddleware, h.Update)
+	router.DELETE("/details/:id", authMiddleware, h.Delete)
 }

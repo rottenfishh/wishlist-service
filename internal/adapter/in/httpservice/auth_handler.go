@@ -33,7 +33,7 @@ func NewUserHandler(service auth.Service) *UserHandler {
 func (h *UserHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		slog.Error("failed to bind register request", "error", err)
 		writeError(c, model.ErrInvalidRequest)
 		return
@@ -63,7 +63,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 // @Router /api/auth/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		slog.Error("failed to bind login request", "error", err)
 		writeError(c, model.ErrInvalidRequest)
 		return

@@ -26,7 +26,7 @@ func AuthMiddleware(cfg AuthConfig) gin.HandlerFunc {
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			slog.Error("invalid authorization header: ", "header", authHeader)
+			slog.Error("invalid authorization header", "header", authHeader)
 			writeError(c, model.ErrUnauthorized)
 			c.Abort()
 			return
@@ -44,7 +44,7 @@ func AuthMiddleware(cfg AuthConfig) gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			slog.Error("invalid token", slog.String("token", tokenStr), slog.String("error", err.Error()))
+			slog.Error("invalid token", "token", tokenStr, "error", err)
 			writeError(c, model.ErrUnauthorized)
 			c.Abort()
 			return
