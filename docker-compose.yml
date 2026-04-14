@@ -24,17 +24,6 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
-  test:
-    image: golang:1.25
-    working_dir: /app
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-    command: go test ./...
 
 volumes:
   postgres_data:
