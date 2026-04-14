@@ -9,43 +9,46 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type authRepoMock struct {
-	saveUserFn       func(ctx context.Context, user *model.User) (*model.User, error)
-	getUserByIDFn    func(ctx context.Context, id string) (*model.User, error)
-	getUserByEmailFn func(ctx context.Context, email string) (*model.User, error)
+	mock.Mock
 }
 
 func (m *authRepoMock) SaveUser(ctx context.Context, user *model.User) (*model.User, error) {
-	return m.saveUserFn(ctx, user)
+	args := m.Called(ctx, user)
+	if result := args.Get(0); result != nil {
+		return result.(*model.User), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *authRepoMock) GetUserByID(ctx context.Context, id string) (*model.User, error) {
-	return m.getUserByIDFn(ctx, id)
+	args := m.Called(ctx, id)
+	if result := args.Get(0); result != nil {
+		return result.(*model.User), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *authRepoMock) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
-	return m.getUserByEmailFn(ctx, email)
+	args := m.Called(ctx, email)
+	if result := args.Get(0); result != nil {
+		return result.(*model.User), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func TestRegister(t *testing.T) {
 	t.Parallel()
 
 	var savedInput *model.User
-	repo := &authRepoMock{
-		saveUserFn: func(ctx context.Context, user *model.User) (*model.User, error) {
-			savedInput = user
-			return user, nil
-		},
-		getUserByIDFn: func(ctx context.Context, id string) (*model.User, error) {
-			return nil, nil
-		},
-		getUserByEmailFn: func(ctx context.Context, email string) (*model.User, error) {
-			return nil, nil
-		},
-	}
+	repo := &authRepoMock{}
+	repo.On("SaveUser", mock.Anything, mock.AnythingOfType("*model.User")).Run(func(args mock.Arguments) {
+		savedInput = args.Get(1).(*model.User)
+	}).Return(&model.User{}, nil)
 
 	svc := NewUserService(repo, "secret", 10000)
 	user, err := svc.Register(context.Background(), "test@example.com", "plain-password")
@@ -74,17 +77,8 @@ func Test_RegisterReturnsRepositoryError(t *testing.T) {
 	t.Parallel()
 
 	expectedErr := model.ErrUserAlreadyExists
-	repo := &authRepoMock{
-		saveUserFn: func(ctx context.Context, user *model.User) (*model.User, error) {
-			return nil, expectedErr
-		},
-		getUserByIDFn: func(ctx context.Context, id string) (*model.User, error) {
-			return nil, nil
-		},
-		getUserByEmailFn: func(ctx context.Context, email string) (*model.User, error) {
-			return nil, nil
-		},
-	}
+	repo := &authRepoMock{}
+	repo.On("SaveUser", mock.Anything, mock.AnythingOfType("*model.User")).Return((*model.User)(nil), expectedErr)
 
 	svc := NewUserService(repo, "secret", 10000)
 	_, err := svc.Register(context.Background(), "test@example.com", "plain-password")
@@ -102,21 +96,12 @@ func TestLoginSuccess(t *testing.T) {
 	}
 
 	userID := uuid.New()
-	repo := &authRepoMock{
-		saveUserFn: func(ctx context.Context, user *model.User) (*model.User, error) {
-			return nil, nil
-		},
-		getUserByIDFn: func(ctx context.Context, id string) (*model.User, error) {
-			return nil, nil
-		},
-		getUserByEmailFn: func(ctx context.Context, email string) (*model.User, error) {
-			return &model.User{
-				ID:           userID,
-				Email:        email,
-				PasswordHash: string(hash),
-			}, nil
-		},
-	}
+	repo := &authRepoMock{}
+	repo.On("GetUserByEmail", mock.Anything, "test@example.com").Return(&model.User{
+		ID:           userID,
+		Email:        "test@example.com",
+		PasswordHash: string(hash),
+	}, nil)
 
 	svc := NewUserService(repo, "secret", 10000)
 	token, err := svc.Login(context.Background(), "test@example.com", "plain-password")
@@ -124,7 +109,7 @@ func TestLoginSuccess(t *testing.T) {
 		t.Fatalf("Login() error = %v", err)
 	}
 
-	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
 		return []byte("secret"), nil
 	})
 	if err != nil {
@@ -143,21 +128,12 @@ func Test_LoginReturnsUnauthorized(t *testing.T) {
 		t.Fatalf("GenerateFromPassword() error = %v", err)
 	}
 
-	repo := &authRepoMock{
-		saveUserFn: func(ctx context.Context, user *model.User) (*model.User, error) {
-			return nil, nil
-		},
-		getUserByIDFn: func(ctx context.Context, id string) (*model.User, error) {
-			return nil, nil
-		},
-		getUserByEmailFn: func(ctx context.Context, email string) (*model.User, error) {
-			return &model.User{
-				ID:           uuid.New(),
-				Email:        email,
-				PasswordHash: string(hash),
-			}, nil
-		},
-	}
+	repo := &authRepoMock{}
+	repo.On("GetUserByEmail", mock.Anything, "test@example.com").Return(&model.User{
+		ID:           uuid.New(),
+		Email:        "test@example.com",
+		PasswordHash: string(hash),
+	}, nil)
 
 	svc := NewUserService(repo, "secret", 10000)
 	_, err = svc.Login(context.Background(), "test@example.com", "wrong-password")

@@ -9,47 +9,71 @@ import (
 	"wishlist-service/internal/model"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
 )
 
 type wishlistRepoMock struct {
-	saveFn        func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error)
-	updateFn      func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error)
-	deleteFn      func(ctx context.Context, id int64) (*model.Wishlist, error)
-	getByIDFn     func(ctx context.Context, id int64) (*model.Wishlist, error)
-	getByUserIDFn func(ctx context.Context, userID uuid.UUID) ([]model.Wishlist, error)
-	getByTokenFn  func(ctx context.Context, token uuid.UUID) (*model.Wishlist, error)
+	mock.Mock
 }
 
 func (m *wishlistRepoMock) Save(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) {
-	return m.saveFn(ctx, wishlist)
+	args := m.Called(ctx, wishlist)
+	if result := args.Get(0); result != nil {
+		return result.(*model.Wishlist), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *wishlistRepoMock) Update(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) {
-	return m.updateFn(ctx, wishlist)
+	args := m.Called(ctx, wishlist)
+	if result := args.Get(0); result != nil {
+		return result.(*model.Wishlist), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *wishlistRepoMock) Delete(ctx context.Context, id int64) (*model.Wishlist, error) {
-	return m.deleteFn(ctx, id)
+	args := m.Called(ctx, id)
+	if result := args.Get(0); result != nil {
+		return result.(*model.Wishlist), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *wishlistRepoMock) GetByID(ctx context.Context, id int64) (*model.Wishlist, error) {
-	return m.getByIDFn(ctx, id)
+	args := m.Called(ctx, id)
+	if result := args.Get(0); result != nil {
+		return result.(*model.Wishlist), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *wishlistRepoMock) GetByUserID(ctx context.Context, userID uuid.UUID) ([]model.Wishlist, error) {
-	return m.getByUserIDFn(ctx, userID)
+	args := m.Called(ctx, userID)
+	if result := args.Get(0); result != nil {
+		return result.([]model.Wishlist), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *wishlistRepoMock) GetByToken(ctx context.Context, token uuid.UUID) (*model.Wishlist, error) {
-	return m.getByTokenFn(ctx, token)
+	args := m.Called(ctx, token)
+	if result := args.Get(0); result != nil {
+		return result.(*model.Wishlist), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 type wishlistGiftReaderMock struct {
-	getByWishlistIDFn func(ctx context.Context, id int64) ([]model.Gift, error)
+	mock.Mock
 }
 
 func (m *wishlistGiftReaderMock) GetByWishlistID(ctx context.Context, id int64) ([]model.Gift, error) {
-	return m.getByWishlistIDFn(ctx, id)
+	args := m.Called(ctx, id)
+	if result := args.Get(0); result != nil {
+		return result.([]model.Gift), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func Test_ServiceCreate(t *testing.T) {
@@ -59,20 +83,11 @@ func Test_ServiceCreate(t *testing.T) {
 	date := time.Now().UTC()
 	var saved *model.Wishlist
 
-	repo := &wishlistRepoMock{
-		saveFn: func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) {
-			saved = wishlist
-			return wishlist, nil
-		},
-		updateFn:      func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) { return nil, nil },
-		deleteFn:      func(ctx context.Context, id int64) (*model.Wishlist, error) { return nil, nil },
-		getByIDFn:     func(ctx context.Context, id int64) (*model.Wishlist, error) { return nil, nil },
-		getByUserIDFn: func(ctx context.Context, userID uuid.UUID) ([]model.Wishlist, error) { return nil, nil },
-		getByTokenFn:  func(ctx context.Context, token uuid.UUID) (*model.Wishlist, error) { return nil, nil },
-	}
-	gifts := &wishlistGiftReaderMock{
-		getByWishlistIDFn: func(ctx context.Context, id int64) ([]model.Gift, error) { return nil, nil },
-	}
+	repo := &wishlistRepoMock{}
+	repo.On("Save", mock.Anything, mock.AnythingOfType("*model.Wishlist")).Run(func(args mock.Arguments) {
+		saved = args.Get(1).(*model.Wishlist)
+	}).Return(&model.Wishlist{}, nil)
+	gifts := &wishlistGiftReaderMock{}
 
 	svc := NewService(repo, gifts)
 	result, err := svc.Create(context.Background(), userID, "Birthday", "desc", date)
@@ -98,20 +113,9 @@ func Test_UpdateForeignWishlist(t *testing.T) {
 	otherUserID := uuid.New()
 	existing := &model.Wishlist{ID: 10, UserID: ownerID, Title: "old"}
 
-	repo := &wishlistRepoMock{
-		saveFn: func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) { return nil, nil },
-		updateFn: func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) {
-			t.Fatal("Update() should not reach repository update")
-			return nil, nil
-		},
-		deleteFn:      func(ctx context.Context, id int64) (*model.Wishlist, error) { return nil, nil },
-		getByIDFn:     func(ctx context.Context, id int64) (*model.Wishlist, error) { return existing, nil },
-		getByUserIDFn: func(ctx context.Context, userID uuid.UUID) ([]model.Wishlist, error) { return nil, nil },
-		getByTokenFn:  func(ctx context.Context, token uuid.UUID) (*model.Wishlist, error) { return nil, nil },
-	}
-	gifts := &wishlistGiftReaderMock{
-		getByWishlistIDFn: func(ctx context.Context, id int64) ([]model.Gift, error) { return nil, nil },
-	}
+	repo := &wishlistRepoMock{}
+	repo.On("GetByID", mock.Anything, existing.ID).Return(existing, nil)
+	gifts := &wishlistGiftReaderMock{}
 
 	svc := NewService(repo, gifts)
 	title := "new"
@@ -128,17 +132,10 @@ func Test_ReturnWishlistDetails(t *testing.T) {
 	expectedWishlist := &model.Wishlist{ID: wishlistID, UserID: uuid.New(), Title: "Birthday"}
 	expectedGifts := []model.Gift{{ID: 1, WishlistID: wishlistID, Name: "Book"}}
 
-	repo := &wishlistRepoMock{
-		saveFn:        func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) { return nil, nil },
-		updateFn:      func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) { return nil, nil },
-		deleteFn:      func(ctx context.Context, id int64) (*model.Wishlist, error) { return nil, nil },
-		getByIDFn:     func(ctx context.Context, id int64) (*model.Wishlist, error) { return expectedWishlist, nil },
-		getByUserIDFn: func(ctx context.Context, userID uuid.UUID) ([]model.Wishlist, error) { return nil, nil },
-		getByTokenFn:  func(ctx context.Context, token uuid.UUID) (*model.Wishlist, error) { return nil, nil },
-	}
-	gifts := &wishlistGiftReaderMock{
-		getByWishlistIDFn: func(ctx context.Context, id int64) ([]model.Gift, error) { return expectedGifts, nil },
-	}
+	repo := &wishlistRepoMock{}
+	repo.On("GetByID", mock.Anything, wishlistID).Return(expectedWishlist, nil)
+	gifts := &wishlistGiftReaderMock{}
+	gifts.On("GetByWishlistID", mock.Anything, wishlistID).Return(expectedGifts, nil)
 
 	svc := NewService(repo, gifts)
 	result, err := svc.GetByID(context.Background(), wishlistID)
@@ -146,8 +143,8 @@ func Test_ReturnWishlistDetails(t *testing.T) {
 		t.Fatalf("GetByID() error = %v", err)
 	}
 
-	if result.Wishlist.ID != wishlistID {
-		t.Fatalf("result.Wishlist.ID = %d, want %d", result.Wishlist.ID, wishlistID)
+	if result.ID != wishlistID {
+		t.Fatalf("result.Wishlist.ID = %d, want %d", result.ID, wishlistID)
 	}
 	if len(result.Gifts) != 1 || result.Gifts[0].Name != "Book" {
 		t.Fatalf("result.Gifts = %#v, want one Book gift", result.Gifts)
@@ -160,19 +157,10 @@ func Test_GiftReaderError(t *testing.T) {
 	expectedErr := errors.New("gift reader failed")
 	token := uuid.New()
 
-	repo := &wishlistRepoMock{
-		saveFn:        func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) { return nil, nil },
-		updateFn:      func(ctx context.Context, wishlist *model.Wishlist) (*model.Wishlist, error) { return nil, nil },
-		deleteFn:      func(ctx context.Context, id int64) (*model.Wishlist, error) { return nil, nil },
-		getByIDFn:     func(ctx context.Context, id int64) (*model.Wishlist, error) { return nil, nil },
-		getByUserIDFn: func(ctx context.Context, userID uuid.UUID) ([]model.Wishlist, error) { return nil, nil },
-		getByTokenFn: func(ctx context.Context, token uuid.UUID) (*model.Wishlist, error) {
-			return &model.Wishlist{ID: 11, UserID: uuid.New()}, nil
-		},
-	}
-	gifts := &wishlistGiftReaderMock{
-		getByWishlistIDFn: func(ctx context.Context, id int64) ([]model.Gift, error) { return nil, expectedErr },
-	}
+	repo := &wishlistRepoMock{}
+	repo.On("GetByToken", mock.Anything, token).Return(&model.Wishlist{ID: 11, UserID: uuid.New()}, nil)
+	gifts := &wishlistGiftReaderMock{}
+	gifts.On("GetByWishlistID", mock.Anything, int64(11)).Return(([]model.Gift)(nil), expectedErr)
 
 	svc := NewService(repo, gifts)
 	_, err := svc.GetByToken(context.Background(), token)
