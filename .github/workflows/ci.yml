@@ -39,7 +39,7 @@ jobs:
         with:
           go-version-file: go.mod
       - run: go mod download
-      - run: go test -tags=integration ./...
+      - run: go test -tags=integration ./tests/...
 
   build:
     runs-on: ubuntu-latest
