@@ -56,19 +56,24 @@ tests/ - интеграционные тесты
 `docker-compose up --build` - поднимает PostgreSQL в контейнере **db** и сервис в **app**
 
 ### Локально
-Для локальной сборки:
+Для локального запуска:
 
-```go run ./cmd/main.go```
+```make run```
 
 Для запуска юнит тестов:
 
-```go test ./...```
+```make test```
 
 Для запуска интеграционных тестов:
 
-```go test -tags=integration ./tests/...```
+```make test-integration```
 
 Интеграционные тесты требуют установленный Docker.
+
+Для прогона линтера:
+
+```make lint```
+
 
 ## Github actions
 
@@ -134,6 +139,8 @@ Authorization: Bearer <token>
 
 #### Подарки
 `POST /api/wishlists/{wishlistId}/gifts` - добавление новой позиции в указанный вишлист.
+
+`GET /api/wishlists/{wishlistId}/gifts/{id}` - получение подарка по ID
 
 `PUT /api/wishlists/{wishlistId}/gifts/{id}` - обновление позиции подарка в указанном вишлисте.
 
@@ -258,6 +265,11 @@ curl -X DELETE http://localhost:8080/api/wishlists/details/1 \
   -H "Authorization: Bearer your-jwt-token"
 ```
 
+#### Получить gift по ID
+```
+curl -X GET http://localhost:8080/api/wishlists/1/gifts/1 \
+  -H "Authorization: Bearer your-jwt-token"
+```
 #### Обновить gift
 ```bash
 curl -X PUT http://localhost:8080/api/wishlists/1/gifts/1 \

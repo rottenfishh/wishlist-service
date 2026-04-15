@@ -198,14 +198,9 @@ func (h *WishlistHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	list, err := h.service.GetByID(c.Request.Context(), int64(id))
+	list, err := h.service.GetByID(c.Request.Context(), userID, int64(id))
 	if err != nil {
 		writeError(c, err)
-		return
-	}
-
-	if list.UserID != userID {
-		writeError(c, model.ErrForbidden)
 		return
 	}
 

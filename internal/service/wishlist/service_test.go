@@ -128,8 +128,9 @@ func Test_UpdateForeignWishlist(t *testing.T) {
 func Test_ReturnWishlistDetails(t *testing.T) {
 	t.Parallel()
 
+	userID := uuid.New()
 	wishlistID := int64(7)
-	expectedWishlist := &model.Wishlist{ID: wishlistID, UserID: uuid.New(), Title: "Birthday"}
+	expectedWishlist := &model.Wishlist{ID: wishlistID, UserID: userID, Title: "Birthday"}
 	expectedGifts := []model.Gift{{ID: 1, WishlistID: wishlistID, Name: "Book"}}
 
 	repo := &wishlistRepoMock{}
@@ -138,7 +139,7 @@ func Test_ReturnWishlistDetails(t *testing.T) {
 	gifts.On("GetByWishlistID", mock.Anything, wishlistID).Return(expectedGifts, nil)
 
 	svc := NewService(repo, gifts)
-	result, err := svc.GetByID(context.Background(), wishlistID)
+	result, err := svc.GetByID(context.Background(), userID, wishlistID)
 	if err != nil {
 		t.Fatalf("GetByID() error = %v", err)
 	}

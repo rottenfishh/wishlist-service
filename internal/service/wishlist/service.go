@@ -59,10 +59,14 @@ func (s *service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]model.Wi
 	return s.repo.GetByUserID(ctx, userID)
 }
 
-func (s *service) GetByID(ctx context.Context, id int64) (*model.WishlistDetails, error) {
+func (s *service) GetByID(ctx context.Context, userID uuid.UUID, id int64) (*model.WishlistDetails, error) {
 	wishlist, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	if wishlist.UserID != userID {
+		return nil, model.ErrForbidden
 	}
 
 	items, err := s.gifts.GetByWishlistID(ctx, wishlist.ID)

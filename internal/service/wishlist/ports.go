@@ -12,7 +12,7 @@ type Service interface {
 	Create(ctx context.Context, userID uuid.UUID, name, description string, date time.Time) (*model.Wishlist, error)
 	Update(ctx context.Context, userID uuid.UUID, wishlistID int64, name, description *string, date *time.Time) (*model.Wishlist, error)
 	GetByUserID(ctx context.Context, userID uuid.UUID) ([]model.Wishlist, error)
-	GetByID(ctx context.Context, id int64) (*model.WishlistDetails, error)
+	GetByID(ctx context.Context, userID uuid.UUID, id int64) (*model.WishlistDetails, error)
 	GetByToken(ctx context.Context, token uuid.UUID) (*model.WishlistDetails, error)
 	Delete(ctx context.Context, userID uuid.UUID, wishlistID int64) (*model.Wishlist, error)
 }

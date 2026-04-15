@@ -28,7 +28,7 @@ func (s *service) GetByID(ctx context.Context, userID uuid.UUID, wishlistID, ID 
 		return nil, err
 	}
 	if gift.WishlistID != wishlistID {
-		return nil, model.ErrForbidden
+		return nil, model.ErrNotFound
 	}
 
 	return gift, nil
