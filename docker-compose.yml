@@ -19,6 +19,15 @@ services:
     build: .
     env_file:
       - .env
+    environment:
+      DATABASE_NAME: ${DATABASE_NAME:-wishlist}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      DATABASE_HOST: ${DATABASE_HOST:-db}
+      DATABASE_PORT: ${DATABASE_PORT:-5432}
+      SERVER_PORT: ${SERVER_PORT:-8080}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret}
+      JWT_EXPIRES_IN_SEC: ${JWT_EXPIRES_IN_SEC:-10000}
     depends_on:
       db:
         condition: service_healthy

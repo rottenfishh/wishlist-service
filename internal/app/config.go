@@ -6,8 +6,6 @@ import (
 	"os"
 	"strconv"
 	"wishlist-service/internal/adapter/in/httpservice"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -51,8 +49,13 @@ func LoadConfig() (*Config, error) {
 		JwtExpires = 10000
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return nil, fmt.Errorf("jwt secret env not provided")
+	}
+
 	authCfg := httpservice.AuthConfig{
-		JWTSecret:  os.Getenv("JWT_SECRET"),
+		JWTSecret:  jwtSecret,
 		JwtExpires: int64(JwtExpires),
 	}
 
@@ -62,15 +65,6 @@ func LoadConfig() (*Config, error) {
 	}
 	return &Config{DatabaseConfig: cfg, AuthConfig: authCfg,
 		ServerPort: serverPort}, nil
-}
-
-// LoadEnv if run locally
-func LoadEnv() error {
-	err := godotenv.Load(".env")
-	if err != nil {
-		return fmt.Errorf("loading .env: %w", err)
-	}
-	return nil
 }
 
 func InitLogging() {
