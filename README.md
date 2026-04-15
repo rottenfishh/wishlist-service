@@ -20,29 +20,32 @@
 
 ## Запуск
 
-Для запуска необходим **.env** файл в корне проекта, с переменными, заданными согласно [.env.example](.env.example)
+Проект запускается одной командой
+
+```docker-compose up --build```
+
+### После запуска доступны
+
+- **API**: [http://localhost:8080/](http://localhost:8080/)
+- **Swagger-UI**: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
 Сервис по умолчанию использует порт **8080**, PostgreSQL - **5432**
 
-Документация **swagger** будет доступна по адресу [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
 Для авторизации в swagger-ui нужно получить jwt-токен и ввести его в поле **Authorize** в виде ```Bearer your-token```
 
-### Docker
-Для запуска в Docker-контейнере:
+### Локальный запуск
+Для исполнения локально требуется .env файл
 
-`docker-compose up --build` - поднимает PostgreSQL в контейнере **db** и сервис в **app**
-
-### Локально
-Для локального запуска:
+Запуск:
 
 ```make run```
 
-Для запуска юнит тестов:
+Юнит-тесты:
 
 ```make test```
 
-Для запуска интеграционных тестов:
+Интеграционные тесты:
 
 ```make test-integration```
 
