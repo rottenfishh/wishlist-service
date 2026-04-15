@@ -451,6 +451,51 @@ paths:
       summary: Delete gift
       tags:
       - gifts
+    get:
+      description: Get gift of given wishlist for the authenticated owner
+      parameters:
+      - description: Wishlist ID
+        in: path
+        name: wishlistId
+        required: true
+        type: integer
+      - description: Gift ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GiftResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get gift by ID
+      tags:
+      - gifts
     put:
       consumes:
       - application/json

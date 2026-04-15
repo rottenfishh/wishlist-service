@@ -13,6 +13,27 @@ type service struct {
 	wishlist WishlistReader
 }
 
+func (s *service) GetByID(ctx context.Context, userID uuid.UUID, wishlistID, ID int64) (*model.Gift, error) {
+	whList, err := s.wishlist.GetByID(ctx, wishlistID)
+	if err != nil {
+		return nil, err
+	}
+
+	if whList.UserID != userID {
+		return nil, model.ErrForbidden
+	}
+
+	gift, err := s.repo.GetByID(ctx, ID)
+	if err != nil {
+		return nil, err
+	}
+	if gift.WishlistID != wishlistID {
+		return nil, model.ErrForbidden
+	}
+
+	return gift, nil
+}
+
 func NewService(repo Repository, wishlist WishlistReader) Service {
 	return &service{repo: repo, wishlist: wishlist}
 }

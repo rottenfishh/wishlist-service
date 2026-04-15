@@ -9,6 +9,7 @@ import (
 
 type Service interface {
 	Save(ctx context.Context, userID uuid.UUID, wishlistID int64, name, description, link string, priority int) (*model.Gift, error)
+	GetByID(ctx context.Context, userID uuid.UUID, wishlistID, ID int64) (*model.Gift, error)
 	Update(ctx context.Context, userID uuid.UUID, wishlistID, ID int64, name, description, link *string, priority *int) (*model.Gift, error)
 	Book(ctx context.Context, ID int64, token uuid.UUID) (*model.Gift, error)
 	Delete(ctx context.Context, userID uuid.UUID, wishlistID, ID int64) (*model.Gift, error)

@@ -67,6 +67,49 @@ func (h *GiftHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
+// GetByID godoc
+// @Summary Get gift by ID
+// @Description Get gift of given wishlist for the authenticated owner
+// @Tags gifts
+// @Produce json
+// @Security BearerAuth
+// @Param wishlistId path int true "Wishlist ID"
+// @Param id path int true "Gift ID"
+// @Success 200 {object} dto.GiftResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Failure 403 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /api/wishlists/{wishlistId}/gifts/{id} [get]
+func (h *GiftHandler) GetByID(c *gin.Context) {
+	wishlistIDParam := c.Param("wishlistId")
+	wishlistID, err := strconv.Atoi(wishlistIDParam)
+	if err != nil {
+		writeError(c, model.ErrInvalidRequest)
+		return
+	}
+	userID, err := extractUserID(c)
+	if err != nil {
+		writeError(c, err)
+		return
+	}
+	IDParam := c.Param("id")
+	ID, err := strconv.Atoi(IDParam)
+	if err != nil {
+		writeError(c, model.ErrInvalidRequest)
+		return
+	}
+
+	userGift, err := h.service.GetByID(c.Request.Context(), userID, int64(wishlistID), int64(ID))
+	if err != nil {
+		writeError(c, err)
+		return
+	}
+	resp := dto.ToGiftResponse(userGift)
+	c.JSON(http.StatusOK, resp)
+}
+
 // Update godoc
 // @Summary Update gift
 // @Description Updates a gift in the specified wishlist owned by the authenticated user
@@ -207,6 +250,7 @@ func (h *GiftHandler) Book(c *gin.Context) {
 
 func (h *GiftHandler) RegisterRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
 	router.POST("/:wishlistId/gifts", authMiddleware, h.Create)
+	router.GET("/:wishlistId/gifts/:id", authMiddleware, h.GetByID)
 	router.PUT("/:wishlistId/gifts/:id", authMiddleware, h.Update)
 	router.DELETE("/:wishlistId/gifts/:id", authMiddleware, h.Delete)
 }
