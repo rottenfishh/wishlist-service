@@ -1,0 +1,34 @@
+# VCS
+.git
+.gitignore
+
+# Local environment
+.env
+
+# IDE/editor files
+.idea
+.vscode
+
+# Build artifacts
+main
+*.exe
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+build/
+
+# Go/test artifacts
+.gocache/
+.gomodcache/
+.golangci-cache/
+coverage.out
+*.out
+*.test
+
+# Local notes/temp files
+todo.txt
+*.log
+tmp/
+temp/
